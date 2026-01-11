@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Pomodoro Timer - Boost your study productivity with the tomato technique"
+    />
+    <title>🍅 Pomodoro Study Timer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>🍅 Pomodoro</h1>
+        <p class="tagline">Focus. Study. Grow.</p>
+      </header>
+
+      <main>
+        <div class="timer-card">
+          <div class="mode-selector">
+            <button class="mode-btn active" data-mode="work">Focus</button>
+            <button class="mode-btn" data-mode="shortBreak">Short Break</button>
+            <button class="mode-btn" data-mode="longBreak">Long Break</button>
+          </div>
+
+          <div class="timer-display">
+            <svg class="progress-ring" viewBox="0 0 200 200">
+              <circle class="progress-ring__bg" cx="100" cy="100" r="90" />
+              <circle class="progress-ring__circle" cx="100" cy="100" r="90" />
+            </svg>
+            <div class="time" id="time">25:00</div>
+          </div>
+
+          <div class="controls">
+            <button class="btn btn-primary" id="startBtn">Start</button>
+            <button class="btn btn-secondary" id="resetBtn">Reset</button>
+          </div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stat">
+            <span class="stat-value" id="sessionCount">0</span>
+            <span class="stat-label">Sessions Today</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value" id="totalTime">0h 0m</span>
+            <span class="stat-label">Focus Time</span>
+          </div>
+        </div>
+
+        <div class="tips-card">
+          <h3>💡 Study Tip</h3>
+          <p id="tip">
+            Stay hydrated! Keep a glass of water nearby while studying.
+          </p>
+        </div>
+      </main>
+
+      <footer>
+        <p>Made with 🍅 for better studying</p>
+      </footer>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
