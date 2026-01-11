@@ -1,9 +1,20 @@
-// Timer configuration
-const MODES = {
+// Timer configuration (mutable for custom settings)
+let MODES = {
   work: { duration: 25 * 60, label: "Focus Time" },
   shortBreak: { duration: 5 * 60, label: "Short Break" },
   longBreak: { duration: 15 * 60, label: "Long Break" },
 };
+
+// Load saved settings
+function loadSettings() {
+  const saved = localStorage.getItem("pomodoro_settings");
+  if (saved) {
+    const settings = JSON.parse(saved);
+    MODES.work.duration = settings.work * 60;
+    MODES.shortBreak.duration = settings.shortBreak * 60;
+    MODES.longBreak.duration = settings.longBreak * 60;
+  }
+}
 
 const TIPS = [
   "Stay hydrated! Keep a glass of water nearby while studying.",
@@ -40,16 +51,36 @@ const timerCard = document.querySelector(".timer-card");
 const progressCircle = document.querySelector(".progress-ring__circle");
 const modeBtns = document.querySelectorAll(".mode-btn");
 
+// Settings modal elements
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsModal = document.getElementById("settingsModal");
+const saveSettingsBtn = document.getElementById("saveSettings");
+const cancelSettingsBtn = document.getElementById("cancelSettings");
+const workDurationInput = document.getElementById("workDuration");
+const shortBreakInput = document.getElementById("shortBreakDuration");
+const longBreakInput = document.getElementById("longBreakDuration");
+
 // Circle circumference
 const CIRCUMFERENCE = 2 * Math.PI * 90;
 progressCircle.style.strokeDasharray = CIRCUMFERENCE;
 
 // Initialize
 function init() {
+  loadSettings();
+  timeRemaining = MODES[currentMode].duration;
+  totalDuration = MODES[currentMode].duration;
   updateDisplay();
   updateStats();
   showRandomTip();
   checkDailyReset();
+  populateSettingsInputs();
+}
+
+// Populate settings inputs with current values
+function populateSettingsInputs() {
+  workDurationInput.value = Math.round(MODES.work.duration / 60);
+  shortBreakInput.value = Math.round(MODES.shortBreak.duration / 60);
+  longBreakInput.value = Math.round(MODES.longBreak.duration / 60);
 }
 
 // Check if we need to reset daily stats
@@ -243,12 +274,53 @@ modeBtns.forEach((btn) => {
 
 // Keyboard shortcuts
 document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
+  if (e.code === "Space" && !settingsModal.classList.contains("active")) {
     e.preventDefault();
     start();
-  } else if (e.code === "KeyR") {
+  } else if (e.code === "KeyR" && !settingsModal.classList.contains("active")) {
     reset();
+  } else if (e.code === "Escape") {
+    closeSettings();
   }
+});
+
+// Settings modal functions
+function openSettings() {
+  pause();
+  populateSettingsInputs();
+  settingsModal.classList.add("active");
+}
+
+function closeSettings() {
+  settingsModal.classList.remove("active");
+}
+
+function saveSettings() {
+  const work = parseInt(workDurationInput.value) || 25;
+  const shortBreak = parseInt(shortBreakInput.value) || 5;
+  const longBreak = parseInt(longBreakInput.value) || 15;
+
+  MODES.work.duration = work * 60;
+  MODES.shortBreak.duration = shortBreak * 60;
+  MODES.longBreak.duration = longBreak * 60;
+
+  localStorage.setItem(
+    "pomodoro_settings",
+    JSON.stringify({ work, shortBreak, longBreak })
+  );
+
+  // Update current timer if not running
+  totalDuration = MODES[currentMode].duration;
+  timeRemaining = totalDuration;
+  updateDisplay();
+  closeSettings();
+}
+
+settingsBtn.addEventListener("click", openSettings);
+cancelSettingsBtn.addEventListener("click", closeSettings);
+saveSettingsBtn.addEventListener("click", saveSettings);
+settingsModal.addEventListener("click", (e) => {
+  if (e.target === settingsModal) closeSettings();
 });
 
 // Initialize app

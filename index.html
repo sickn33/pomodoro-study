@@ -36,6 +36,52 @@
           <div class="controls">
             <button class="btn btn-primary" id="startBtn">Start</button>
             <button class="btn btn-secondary" id="resetBtn">Reset</button>
+            <button class="btn btn-icon" id="settingsBtn" title="Settings">
+              ⚙️
+            </button>
+          </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settingsModal">
+          <div class="modal-content">
+            <h2>⏱️ Timer Settings</h2>
+            <div class="settings-group">
+              <label for="workDuration">Focus Duration (min)</label>
+              <input
+                type="number"
+                id="workDuration"
+                min="1"
+                max="120"
+                value="25"
+              />
+            </div>
+            <div class="settings-group">
+              <label for="shortBreakDuration">Short Break (min)</label>
+              <input
+                type="number"
+                id="shortBreakDuration"
+                min="1"
+                max="30"
+                value="5"
+              />
+            </div>
+            <div class="settings-group">
+              <label for="longBreakDuration">Long Break (min)</label>
+              <input
+                type="number"
+                id="longBreakDuration"
+                min="1"
+                max="60"
+                value="15"
+              />
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-secondary" id="cancelSettings">
+                Cancel
+              </button>
+              <button class="btn btn-primary" id="saveSettings">Save</button>
+            </div>
           </div>
         </div>
 
