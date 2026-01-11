@@ -44,6 +44,56 @@ let lastTipIndex = -1;
 // Reusable AudioContext for sound playback (created on first use)
 let audioContext = null;
 
+// Timer persistence functions
+function saveTimerState() {
+  if (isRunning) {
+    const endTimestamp = Date.now() + timeRemaining * 1000;
+    localStorage.setItem(
+      "pomodoro_timer_state",
+      JSON.stringify({
+        endTimestamp,
+        mode: currentMode,
+        totalDuration,
+      })
+    );
+  }
+}
+
+function clearTimerState() {
+  localStorage.removeItem("pomodoro_timer_state");
+}
+
+function restoreTimerState() {
+  try {
+    const saved = localStorage.getItem("pomodoro_timer_state");
+    if (!saved) return false;
+
+    const state = JSON.parse(saved);
+    const now = Date.now();
+    const remaining = Math.floor((state.endTimestamp - now) / 1000);
+
+    if (remaining <= 0) {
+      // Timer has expired while page was closed
+      clearTimerState();
+      // Switch to appropriate mode and complete
+      currentMode = state.mode;
+      totalDuration = state.totalDuration || MODES[state.mode].duration;
+      timeRemaining = 0;
+      return "expired";
+    }
+
+    // Restore running timer
+    currentMode = state.mode;
+    totalDuration = state.totalDuration || MODES[state.mode].duration;
+    timeRemaining = remaining;
+    return true;
+  } catch (e) {
+    console.warn("Failed to restore timer state:", e);
+    clearTimerState();
+    return false;
+  }
+}
+
 // State
 let currentMode = "work";
 let timeRemaining = MODES.work.duration;
@@ -82,13 +132,44 @@ progressCircle.style.strokeDasharray = CIRCUMFERENCE;
 // Initialize
 function init() {
   loadSettings();
-  timeRemaining = MODES[currentMode].duration;
-  totalDuration = MODES[currentMode].duration;
-  updateDisplay();
+  checkDailyReset();
+
+  // Try to restore a running timer from previous session
+  const restored = restoreTimerState();
+
+  if (restored === "expired") {
+    // Timer expired while page was closed - complete the session
+    updateModeButtons();
+    updateDisplay();
+    completeSession();
+  } else if (restored === true) {
+    // Timer is still running - resume it
+    updateModeButtons();
+    updateDisplay();
+    // Auto-start the timer
+    isRunning = true;
+    interval = setInterval(tick, 1000);
+    startBtn.textContent = "Pause";
+    timerCard.classList.add("running");
+  } else {
+    // No saved timer - normal initialization
+    timeRemaining = MODES[currentMode].duration;
+    totalDuration = MODES[currentMode].duration;
+    updateDisplay();
+  }
+
   updateStats();
   showRandomTip();
-  checkDailyReset();
   populateSettingsInputs();
+}
+
+// Update mode buttons to reflect current mode
+function updateModeButtons() {
+  modeBtns.forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.mode === currentMode);
+  });
+  const isBreak = currentMode !== "work";
+  progressCircle.classList.toggle("break", isBreak);
 }
 
 // Populate settings inputs with current values
@@ -249,6 +330,9 @@ function start() {
     startBtn.textContent = "Pause";
     timerCard.classList.add("running");
 
+    // Save timer state for persistence across page reloads
+    saveTimerState();
+
     // Request notification permission
     if (Notification.permission === "default") {
       Notification.requestPermission();
@@ -267,11 +351,15 @@ function pause() {
   }
   startBtn.textContent = "Start";
   timerCard.classList.remove("running");
+
+  // Clear saved timer state when paused
+  clearTimerState();
 }
 
 // Reset timer
 function reset() {
   pause();
+  clearTimerState();
   timeRemaining = totalDuration;
   updateDisplay();
 }
