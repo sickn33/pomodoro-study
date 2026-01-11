@@ -8,7 +8,14 @@
       content="Pomodoro Timer - Boost your study productivity with the tomato technique"
     />
     <title>🍅 Pomodoro Study Timer</title>
-    <link rel="stylesheet" href="style.css?v=2" />
+    <link rel="stylesheet" href="style.css?v=3" />
+    <!-- Preload Inter font for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="container">
@@ -18,7 +25,8 @@
       </header>
 
       <main>
-        <div class="timer-card">
+        <!-- Timer Card -->
+        <div class="card">
           <div class="mode-selector">
             <button class="mode-btn active" data-mode="work">Focus</button>
             <button class="mode-btn" data-mode="shortBreak">Short Break</button>
@@ -26,9 +34,9 @@
           </div>
 
           <div class="timer-display">
-            <svg class="progress-ring" viewBox="0 0 200 200">
-              <circle class="progress-ring__bg" cx="100" cy="100" r="90" />
-              <circle class="progress-ring__circle" cx="100" cy="100" r="90" />
+            <svg class="progress-ring" viewBox="0 0 220 220">
+              <circle class="progress-ring__bg" cx="110" cy="110" r="105" />
+              <circle class="progress-ring__circle" cx="110" cy="110" r="105" />
             </svg>
             <div class="time" id="time">25:00</div>
           </div>
@@ -36,72 +44,57 @@
           <div class="controls">
             <button class="btn btn-primary" id="startBtn">Start</button>
             <button class="btn btn-secondary" id="resetBtn">Reset</button>
-            <button class="btn btn-icon" id="settingsBtn" title="Settings">
+            <button class="btn btn-secondary" id="settingsBtn" title="Settings">
               ⚙️
             </button>
           </div>
         </div>
 
-        <!-- Settings Modal -->
-        <div class="modal" id="settingsModal">
-          <div class="modal-content">
-            <h2>⏱️ Timer Settings</h2>
-            <div class="settings-group">
-              <label for="workDuration">Focus Duration (min)</label>
-              <input
-                type="number"
-                id="workDuration"
-                min="1"
-                max="120"
-                value="25"
-              />
-            </div>
-            <div class="settings-group">
-              <label for="shortBreakDuration">Short Break (min)</label>
-              <input
-                type="number"
-                id="shortBreakDuration"
-                min="1"
-                max="30"
-                value="5"
-              />
-            </div>
-            <div class="settings-group">
-              <label for="longBreakDuration">Long Break (min)</label>
-              <input
-                type="number"
-                id="longBreakDuration"
-                min="1"
-                max="60"
-                value="15"
-              />
-            </div>
-            <div class="modal-actions">
-              <button class="btn btn-secondary" id="cancelSettings">
-                Cancel
-              </button>
-              <button class="btn btn-primary" id="saveSettings">Save</button>
-            </div>
+        <!-- Task List Card -->
+        <div class="card tasks-card">
+          <div class="tasks-header">
+            <h2>📝 Tasks</h2>
+            <span
+              id="tasksCount"
+              style="color: var(--text-secondary); font-size: 0.9rem"
+              >0 remaining</span
+            >
           </div>
+
+          <div class="task-input-group">
+            <input
+              type="text"
+              id="taskInput"
+              placeholder="What are you working on?"
+              autocomplete="off"
+            />
+            <button id="addTaskBtn" title="Add Task">＋</button>
+          </div>
+
+          <ul class="task-list" id="taskList">
+            <!-- Tasks will be added here -->
+          </ul>
         </div>
 
-        <div class="stats-card">
-          <div class="stat">
-            <span class="stat-value" id="sessionCount">0</span>
-            <span class="stat-label">Sessions Today</span>
+        <!-- Stats Card -->
+        <div class="stats-row">
+          <div class="stat-box">
+            <span class="stat-num" id="sessionCount">0</span>
+            <span class="stat-label">Sessions</span>
           </div>
-          <div class="stat">
-            <span class="stat-value" id="totalTime">0h 0m</span>
+          <div class="stat-box">
+            <span class="stat-num" id="totalTime">0h 0m</span>
             <span class="stat-label">Focus Time</span>
           </div>
         </div>
 
-        <div class="tips-card">
+        <!-- Tips Card -->
+        <!-- <div class="card tips-card">
           <h3>💡 Study Tip</h3>
           <p id="tip">
             Stay hydrated! Keep a glass of water nearby while studying.
           </p>
-        </div>
+        </div> -->
       </main>
 
       <footer>
@@ -109,6 +102,41 @@
       </footer>
     </div>
 
-    <script src="app.js?v=2"></script>
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+      <div class="modal-content">
+        <h2>⏱️ Timer Settings</h2>
+        <div class="settings-group">
+          <label for="workDuration">Focus Duration (min)</label>
+          <input type="number" id="workDuration" min="1" max="120" value="25" />
+        </div>
+        <div class="settings-group">
+          <label for="shortBreakDuration">Short Break (min)</label>
+          <input
+            type="number"
+            id="shortBreakDuration"
+            min="1"
+            max="30"
+            value="5"
+          />
+        </div>
+        <div class="settings-group">
+          <label for="longBreakDuration">Long Break (min)</label>
+          <input
+            type="number"
+            id="longBreakDuration"
+            min="1"
+            max="60"
+            value="15"
+          />
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="cancelSettings">Cancel</button>
+          <button class="btn btn-primary" id="saveSettings">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js?v=3"></script>
   </body>
 </html>
