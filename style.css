@@ -68,6 +68,7 @@ header h1 {
 /* Timer Card */
 .timer-card {
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius);
@@ -99,6 +100,11 @@ header h1 {
 
 .mode-btn:hover {
   color: var(--text-primary);
+}
+
+.mode-btn:focus-visible {
+  outline: 2px solid var(--tomato);
+  outline-offset: 2px;
 }
 
 .mode-btn.active {
@@ -163,6 +169,17 @@ header h1 {
   letter-spacing: -2px;
 }
 
+.mode-label {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: -16px;
+  margin-bottom: 24px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 /* Controls */
 .controls {
   display: flex;
@@ -197,12 +214,25 @@ header h1 {
 
 .btn-secondary {
   background: rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--tomato);
+  outline-offset: 2px;
+}
+
+.shortcuts-hint {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-top: 16px;
+  opacity: 0.7;
 }
 
 /* Stats Card */
@@ -215,6 +245,7 @@ header h1 {
 .stat {
   flex: 1;
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius);
@@ -238,6 +269,7 @@ header h1 {
 /* Tips Card */
 .tips-card {
   background: var(--bg-card);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: var(--radius);
@@ -379,6 +411,18 @@ footer {
   outline: none;
   border-color: var(--tomato);
   box-shadow: 0 0 0 3px var(--tomato-glow);
+}
+
+.settings-group input:invalid {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.settings-group .input-hint {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  opacity: 0.7;
 }
 
 .modal-actions {

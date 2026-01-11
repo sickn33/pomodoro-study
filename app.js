@@ -1,3 +1,11 @@
+// ============================================
+// CONSTANTS
+// ============================================
+const PROGRESS_CIRCLE_RADIUS = 90;
+const CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS;
+const TIMER_INTERVAL_MS = 100; // Use smaller interval for smoother updates
+const SESSIONS_FOR_LONG_BREAK = 4;
+
 // Timer configuration (mutable for custom settings)
 let MODES = {
   work: { duration: 25 * 60, label: "Focus Time" },
@@ -5,18 +13,29 @@ let MODES = {
   longBreak: { duration: 15 * 60, label: "Long Break" },
 };
 
-// Load saved settings with error handling
+// ============================================
+// SETTINGS PERSISTENCE
+// ============================================
+
+/**
+ * Load saved settings from localStorage with validation and error handling.
+ * Falls back to defaults if data is corrupted or invalid.
+ */
 function loadSettings() {
   try {
     const saved = localStorage.getItem("pomodoro_settings");
     if (saved) {
       const settings = JSON.parse(saved);
-      // Validate parsed values before applying
-      if (settings.work > 0) MODES.work.duration = settings.work * 60;
-      if (settings.shortBreak > 0)
+      // Validate parsed values before applying (must be positive numbers)
+      if (typeof settings.work === "number" && settings.work > 0) {
+        MODES.work.duration = settings.work * 60;
+      }
+      if (typeof settings.shortBreak === "number" && settings.shortBreak > 0) {
         MODES.shortBreak.duration = settings.shortBreak * 60;
-      if (settings.longBreak > 0)
+      }
+      if (typeof settings.longBreak === "number" && settings.longBreak > 0) {
         MODES.longBreak.duration = settings.longBreak * 60;
+      }
     }
   } catch (e) {
     // If localStorage data is corrupted, reset to defaults
@@ -115,6 +134,7 @@ const tipElement = document.getElementById("tip");
 const timerCard = document.querySelector(".timer-card");
 const progressCircle = document.querySelector(".progress-ring__circle");
 const modeBtns = document.querySelectorAll(".mode-btn");
+const modeLabel = document.getElementById("modeLabel");
 
 // Settings modal elements
 const settingsBtn = document.getElementById("settingsBtn");
@@ -125,9 +145,10 @@ const workDurationInput = document.getElementById("workDuration");
 const shortBreakInput = document.getElementById("shortBreakDuration");
 const longBreakInput = document.getElementById("longBreakDuration");
 
-// Circle circumference
-const CIRCUMFERENCE = 2 * Math.PI * 90;
-progressCircle.style.strokeDasharray = CIRCUMFERENCE;
+// Initialize progress circle
+if (progressCircle) {
+  progressCircle.style.strokeDasharray = CIRCUMFERENCE;
+}
 
 // Initialize
 function init() {
@@ -170,6 +191,11 @@ function updateModeButtons() {
   });
   const isBreak = currentMode !== "work";
   progressCircle.classList.toggle("break", isBreak);
+
+  // Update mode label text
+  if (modeLabel) {
+    modeLabel.textContent = MODES[currentMode].label;
+  }
 }
 
 // Populate settings inputs with current values
@@ -232,16 +258,39 @@ function showRandomTip() {
   tipElement.textContent = TIPS[newIndex];
 }
 
-// Play notification sound using reusable AudioContext
-function playSound() {
-  // Create AudioContext on first use (avoids browser autoplay restrictions)
-  if (!audioContext) {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+/**
+ * Send a browser notification safely, handling potential errors.
+ * @param {string} title - Notification title
+ * @param {string} body - Notification body text
+ */
+function safeNotify(title, body) {
+  try {
+    if (Notification.permission === "granted") {
+      new Notification(title, { body, icon: "🍅" });
+    }
+  } catch (e) {
+    console.warn("Failed to show notification:", e);
   }
+}
 
-  // Resume context if suspended (browser security feature)
-  if (audioContext.state === "suspended") {
-    audioContext.resume();
+/**
+ * Play notification sound using reusable AudioContext.
+ * Wrapped in try-catch to handle restricted environments.
+ */
+function playSound() {
+  try {
+    // Create AudioContext on first use (avoids browser autoplay restrictions)
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // Resume context if suspended (browser security feature)
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+  } catch (e) {
+    console.warn("AudioContext not available:", e);
+    return; // Exit gracefully if audio is not supported
   }
 
   // Create a pleasant chime
@@ -278,14 +327,17 @@ function tick() {
   }
 }
 
-// Complete session
+/**
+ * Complete the current session and transition to the next mode.
+ * Handles statistics updates and browser notifications.
+ */
 function completeSession() {
   pause();
   playSound();
 
   if (currentMode === "work") {
     sessions++;
-    // FIX: Use actual work duration instead of hardcoded 25 minutes
+    // Use actual work duration for accurate tracking
     const focusMinutesCompleted = Math.round(MODES.work.duration / 60);
     totalFocusMinutes += focusMinutesCompleted;
     localStorage.setItem("pomodoro_sessions", sessions.toString());
@@ -295,30 +347,23 @@ function completeSession() {
     );
     updateStats();
 
-    // Auto-switch to break
-    const nextMode = sessions % 4 === 0 ? "longBreak" : "shortBreak";
+    // Auto-switch to break (long break every N sessions)
+    const nextMode =
+      sessions % SESSIONS_FOR_LONG_BREAK === 0 ? "longBreak" : "shortBreak";
     switchMode(nextMode);
 
-    // Browser notification
-    if (Notification.permission === "granted") {
-      new Notification("🍅 Pomodoro Complete!", {
-        body: `Great work! Time for a ${
-          nextMode === "longBreak" ? "long" : "short"
-        } break.`,
-        icon: "🍅",
-      });
-    }
+    // Browser notification using safe helper
+    const breakType = nextMode === "longBreak" ? "long" : "short";
+    safeNotify(
+      "🍅 Pomodoro Complete!",
+      `Great work! Time for a ${breakType} break.`
+    );
   } else {
     // Auto-switch back to work
     switchMode("work");
     showRandomTip();
 
-    if (Notification.permission === "granted") {
-      new Notification("⏰ Break Over!", {
-        body: "Ready to focus again?",
-        icon: "🍅",
-      });
-    }
+    safeNotify("⏰ Break Over!", "Ready to focus again?");
   }
 }
 
@@ -364,21 +409,22 @@ function reset() {
   updateDisplay();
 }
 
-// Switch mode
+/**
+ * Switch to a different timer mode.
+ * @param {string} mode - The mode to switch to ('work', 'shortBreak', 'longBreak')
+ */
 function switchMode(mode) {
+  if (!MODES[mode]) {
+    console.warn(`Invalid mode: ${mode}`);
+    return;
+  }
+
   currentMode = mode;
   totalDuration = MODES[mode].duration;
   timeRemaining = totalDuration;
 
-  // Update UI
-  modeBtns.forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.mode === mode);
-  });
-
-  // Update progress ring color
-  const isBreak = mode !== "work";
-  progressCircle.classList.toggle("break", isBreak);
-
+  // Reuse updateModeButtons for DRY compliance
+  updateModeButtons();
   updateDisplay();
 }
 
